@@ -15,6 +15,7 @@ static EXECUTION_REPORT: &'static str = "executionReport";
 
 static KLINE: &'static str = "kline";
 static AGGREGATED_TRADE: &'static str = "aggTrade";
+static RAW_TRADE: &'static str = "trade";
 static DEPTH_ORDERBOOK : &'static str = "depthUpdate";
 static PARTIAL_ORDERBOOK : &'static str = "lastUpdateId";
 
@@ -29,6 +30,7 @@ pub trait MarketEventHandler {
     fn aggregated_trades_handler(&self, event: &TradesEvent);
     fn depth_orderbook_handler(&self, event: &DepthOrderBookEvent);
     fn partial_orderbook_handler(&self, order_book: &OrderBook);
+    fn raw_trades_handler(&self, event: &RawTradeEvent);
 }
 
 pub trait DayTickerEventHandler {
@@ -124,6 +126,12 @@ impl WebSockets {
 
                     if let Some(ref h) = self.market_handler {
                         h.aggregated_trades_handler(&trades);
+                    }
+                } else if msg.find(TRADE) != None {
+                    let trade: RawTradeEvent = from_str(msg.as_str()).unwrap();
+
+                    if let Some(ref h) = self.market_handler {
+                        h.raw_trades_handler(&trade);
                     }
                 } else if msg.find(DAYTICKER) != None {
                     let trades: Vec<DayTickerEvent> = from_str(msg.as_str()).unwrap();
