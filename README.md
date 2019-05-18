@@ -1,6 +1,6 @@
 # binance-rs
 
-Unofficial Rust Library for the [Binance API](https://github.com/binance-exchange/binance-official-api-docs)
+Unofficial Rust Library for the [Binance API](https://github.com/binance-exchange/binance-official-api-docs) forked from [wisespace-io/binance-rs](https://github.com/wisespace-io/binance-rs.git) with raw trade stream support.
 
 [![Crates.io](https://img.shields.io/crates/v/binance.svg)](https://crates.io/crates/binance)
 [![Build Status](https://travis-ci.org/wisespace-io/binance-rs.png?branch=master)](https://travis-ci.org/wisespace-io/binance-rs)
@@ -24,7 +24,7 @@ Add this to your Cargo.toml
 
 ```toml
 [dependencies]
-binance = { git = "https://github.com/wisespace-io/binance-rs.git" }
+binance = { git = "https://github.com/steve-fan/binance-rs.git" }
 ```
 
 ### MARKET DATA
@@ -277,10 +277,26 @@ impl MarketEventHandler for WebSocketHandler {
             event.symbol, event.price, event.qty
         );
     }
+    
+    fn depth_orderbook_handler(&self, event: &DepthOrderBookEvent) {
+        println!("{}", event.symbol)
+    }
+
+    fn partial_orderbook_handler(&self, order_book: &OrderBook) {
+        println!("{}", order_book.last_update_id);
+    }
+
+    fn raw_trades_handler(&self, event: &RawTradeEvent) {
+        println!(
+            "Symbol: {}, price: {}, qty: {}, buyer order id: {}, seller order id: {}",
+            event.symbol, event.price, event.qty, event.buyer_order_id, event.seller_order_id
+        );
+    }
 }
 
 fn main() {
     let agg_trade: String = format!("{}@aggTrade", "ethbtc");
+    // let raw_trade: String = format!("{}@trade", "ethusdt");
     let mut web_socket: WebSockets = WebSockets::new();
 
     web_socket.add_market_handler(WebSocketHandler);
